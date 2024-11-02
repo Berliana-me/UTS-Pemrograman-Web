@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediConnect - Solusi Kesehatan Digital</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .card-hover {
+            transition: transform 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: scale(1.05);
+        }
+        .notification {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen">
+    <div class="container mx-auto max-w-4xl p-6">
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center space-x-4">
+                <img src="logo.jpg" alt="Logo" class="w-12 h-12 rounded-full">
+                <h1 class="text-3xl font-bold text-blue-600">MediConnect</h1>
+            </div>
+            <div class="flex space-x-4">
+                <button id="profileBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-user"></i> Profil
+                </button>
+                <button id="notificationToggle" class="relative">
+                    <i class="fas fa-bell text-2xl text-gray-700"></i>
+                    <span id="notificationBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 hidden">0</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div id="healthTracker" class="bg-white p-6 rounded-xl shadow-lg card-hover cursor-pointer">
+                <h3 class="text-xl font-semibold mb-4">Pelacakan Kesehatan</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span>Detak Jantung</span>
+                        <span id="heartRateValue" class="font-bold text-blue-600">- BPM</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Tekanan Darah</span>
+                        <span id="bloodPressureValue" class="font-bold text-green-600">- mmHg</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="medicineReminder" class="bg-white p-6 rounded-xl shadow-lg card-hover cursor-pointer">
+                <h3 class="text-xl font-semibold mb-4">Pengingat Obat</h3>
+                <div id="medicineList" class="space-y-2">
+                    <!-- Daftar obat akan dimuat di sini -->
+                </div>
+            </div>
+
+            <div id="appointmentScheduler" class="bg-white p-6 rounded-xl shadow-lg card-hover cursor-pointer">
+                <h3 class="text-xl font-semibold mb-4">Jadwal Konsultasi</h3>
+                <div id="appointmentList" class="space-y-2">
+                    <!-- Daftar janji akan dimuat di sini -->
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-semibold mb-4">Statistik Kesehatan</h3>
+                <canvas id="healthStatChart"></canvas>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-semibold mb-4">Rekomendasi Kesehatan</h3>
+                <div id="healthTips" class="space-y-3">
+                    <!-- Tips kesehatan akan dimuat di sini -->
+                </div>
+            </div>
+        </div>
+
+        <div id="modalContainer" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden justify-center items-center">
+            <!-- Modal akan dimuat di sini -->
+        </div>
+
+        <div id="notificationContainer" class="fixed top-4 right-4 space-y-2 z-50">
+            <!-- Notifikasi akan ditampilkan di sini -->
+        </div>
+    </div>
+    <style>
+        .card-hover {
+            transition: transform 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: scale(1.05);
+        }
+        .notification {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+        <div class="grid grid-cols-2 gap-6 mb-8">
+            <div id="bmiCalculator" class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                <h3 class="text-xl font-semibold mb-4">Kalkulator Berat Badan Ideal</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="height" class="block text-sm font-medium text-gray-700">Tinggi Badan (cm)</label>
+                        <input type="number" id="height" class="w-full p-2 border rounded" placeholder="Tinggi badan dalam cm">
+                    </div>
+                    <div>
+                        <label for="weight" class="block text-sm font-medium text-gray-700">Berat Badan (kg)</label>
+                        <input type="number" id="weight" class="w-full p-2 border rounded" placeholder="Berat badan dalam kg">
+                    </div>
+                    <button onclick="calculateBMI()" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Hitung BMI</button>
+                </div>
+                <div id="bmiResult" class="mt-4 text-center hidden">
+                    <p class="text-lg font-semibold">Hasil BMI: <span id="bmiValue"></span></p>
+                    <p id="bmiCategory" class="mt-2"></p>
+                </div>
+            </div>
+
+            <div id="dietRecommendations" class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-semibold mb-4">Rekomendasi Diet</h3>
+                <p id="dietTip" class="text-gray-700"></p>
+            </div>
+        </div>
+    </div>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #chartContainer {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+        #inputContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        input {
+            padding: 5px;
+            margin-left: 10px;
+        }
+       
+        /* Styles for Popup */
+        #popupContainer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #popup {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        #popup h2 {
+            margin-bottom: 15px;
+        }
+        #popup button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #166de6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            
+        }
+        #calories {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        #addButton {
+            background-color: #377cf5; /* warna hijau */
+            color: white; /* warna teks */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+          }
+    </style>
+</head>
+<body>
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+    <h1>Grafik Kalori</h1>
+    <div id="chartContainer">
+        <canvas id="dietChart"></canvas>
+    </div>
+
+    <div id="inputContainer">
+        <div class="input-group">
+            <label for="calories">Masukkan Kalori Yang Dikonsumsi:</label>
+            <input type="number" id="calories" placeholder="Kalori">
+        </div>
+        <div id="button">
+        <button onclick="addData()" id="addButton">Tambah Data</button>
+        </div>
+    </div>
+
+    <!-- Popup Container -->
+    <div id="popupContainer">
+        <div id="popup">
+            <h2>Kalori Ditambahkan!</h2>
+            <p>Datamu akan dimasukkan ke dalam grafik.</p>
+            <button onclick="closePopup()">OK</button>
+        </div>
+    </div>
+</div>
+
+    <script>
+        // Inisialisasi Variabel
+        const healthTracker = document.getElementById('healthTracker');
+        const medicineReminder = document.getElementById('medicineReminder');
+        const appointmentScheduler = document.getElementById('appointmentScheduler');
+        const notificationContainer = document.getElementById('notificationContainer');
+        const notificationToggle = document.getElementById('notificationToggle');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const modalContainer = document.getElementById('modalContainer');
+        const profileBtn = document.getElementById('profileBtn');
+        const healthStatChart = document.getElementById('healthStatChart');
+        const healthTips = document.getElementById('healthTips');
+
+        // Data Kesehatan
+        const userData = {
+            name: 'John Doe',
+            age: 35,
+            heartRateHistory: [72, 75, 70, 78, 76, 73],
+            bloodPressureHistory: [[120, 80], [122, 82], [118, 78]]
+        };
+
+        // Fungsi Notifikasi
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.classList.add(
+                'notification', 
+                'p-4', 
+                'rounded-lg', 
+                'shadow-lg', 
+                'text-white',
+                type === 'success' ? 'bg-green-500' : 
+                type === 'warning' ? 'bg-yellow-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            );
+            notification.textContent = message;
+            notificationContainer.appendChild(notification);
+
+            // Update badge
+            const currentBadge = parseInt(notificationBadge.textContent || '0');
+            notificationBadge.textContent = currentBadge + 1;
+            notificationBadge.classList.remove('hidden');
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Fungsi Update Statistik Kesehatan
+        function updateHealthStats() {
+            const heartRateValue = document.getElementById('heartRateValue');
+            const bloodPressureValue = document.getElementById('bloodPressureValue');
+
+            // Update nilai detak jantung
+            const latestHeartRate = userData.heartRateHistory[userData.heartRateHistory.length - 1];
+            heartRateValue.textContent = `${latestHeartRate} BPM`;
+
+            // Update tekanan darah
+            const latestBloodPressure = userData.bloodPressureHistory[userData.bloodPressureHistory.length - 1];
+            bloodPressureValue.textContent = `${latestBloodPressure[0]}/${latestBloodPressure[1]} mmHg`;
+
+            // Grafik statistik kesehatan
+            const ctx = healthStatChart.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+                    datasets: [{
+                        label: 'Detak Jantung',
+                        data: userData.heartRateHistory,
+                        borderColor: 'blue',
+                        tension: 0.1
+                    }, {
+                        label: 'Tekanan Darah (Sistol)',
+                        data: userData.bloodPressureHistory.map(bp => bp[0]),
+                        borderColor: 'green',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Fungsi Pengingat Obat
+        // Data obat akan diubah menjadi array yang dapat dimodifikasi
+let medicines = [
+{ id: 1, name: 'Paracetamol', time: '08:00', dosage: '500mg' },
+{ id: 2, name: 'Vitamin C', time: '12:00', dosage: '1000mg' },
+{ id: 3, name: 'Antibiotik', time: '20:00', dosage: '250mg' }
+];
+
+// Fungsi untuk me-render daftar obat
+function renderMedicineList() {
+const medicineList = document.getElementById('medicineList');
+medicineList.innerHTML = medicines.map(medicine => `
+    <div class="flex justify-between items-center bg-gray-100 p-2 rounded mb-2">
+        <div>
+            <span class="font-semibold">${medicine.name}</span>
+            <span class="text-sm text-gray-500 ml-2">${medicine.dosage}</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-blue-600">${medicine.time}</span>
+            <button onclick="deleteMedicine(${medicine.id})" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </div>
+`).join('');
+}
+
+// Fungsi untuk menambah obat baru
+function addMedicine() {
+const modalContainer = document.getElementById('modalContainer');
+modalContainer.innerHTML = `
+    <div class="bg-white p-6 rounded-xl shadow-lg w-96">
+        <h2 class="text-2xl font-bold mb-4">Tambah Obat Baru</h2>
+        <form id="addMedicineForm" class="space-y-4">
+            <div>
+                <label class="block mb-2">Nama Obat</label>
+                <input type="text" id="medicineName" class="w-full p-2 border rounded" required>
+            </div>
+            <div>
+                <label class="block mb-2">Dosis</label>
+                <input type="text" id="medicineDosage" class="w-full p-2 border rounded" required>
+            </div>
+            <div>
+                <label class="block mb-2">Waktu</label>
+                <input type="time" id="medicineTime" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="flex space-x-4">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Simpan</button>
+                <button type="button" onclick="closeModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+            </div>
+        </form>
+    </div>
+`;
+modalContainer.classList.remove('hidden');
+modalContainer.classList.add('flex');
+
+const addMedicineForm = document.getElementById('addMedicineForm');
+addMedicineForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('medicineName').value;
+    const dosage = document.getElementById('medicineDosage').value;
+    const time = document.getElementById('medicineTime').value;
+
+    const newMedicine = {
+        id: Date.now(), // Gunakan timestamp sebagai ID unik
+        name: name,
+        time: time,
+        dosage: dosage
+    };
+
+    medicines.push(newMedicine);
+    renderMedicineList();
+    showNotification(`Obat ${name} berhasil ditambahkan`, 'success');
+    closeModal();
+});
+}
+
+// Fungsi untuk menghapus obat
+function deleteMedicine(id) {
+const medicineToDelete = medicines.find(medicine => medicine.id === id);
+
+if (medicineToDelete) {
+    medicines = medicines.filter(medicine => medicine.id !== id);
+    renderMedicineList();
+    showNotification(`Obat ${medicineToDelete.name} berhasil dihapus`, 'warning');
+}
+}
+
+// Fungsi untuk menutup modal
+function closeModal() {
+const modalContainer = document.getElementById('modalContainer');
+modalContainer.classList.add('hidden');
+modalContainer.classList.remove('flex');
+modalContainer.innerHTML = '';
+}
+
+// Modifikasi fungsi loadMedicineReminders
+function loadMedicineReminders() {
+renderMedicineList();
+
+// Tambahkan tombol Tambah Obat
+const medicineReminder = document.getElementById('medicineReminder');
+const addButton = document.createElement('button');
+addButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Tambah Obat';
+addButton.classList.add('mt-4', 'w-full', 'bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded', 'hover:bg-blue-600');
+addButton.addEventListener('click', addMedicine);
+
+// Cari div terakhir di medicineReminder dan tambahkan tombol
+const medicineList = document.getElementById('medicineList');
+medicineList.parentNode.insertBefore(addButton, medicineList.nextSibling);
+}
+        // Data awal janji temu
+    let appointments = [
+    { id: 1, doctor: 'Dr. Sarah', specialty: 'Mata', date: '15-11-2024', time: '10:00' },
+    { id: 2, doctor: 'Dr. Michael', specialty: 'Jantung', date: '20-11-2024', time: '14:30' }
+];
+
+// Fungsi untuk me-render daftar jadwal konsultasi
+function renderAppointments() {
+    const appointmentList = document.getElementById('appointmentList');
+    appointmentList.innerHTML = appointments.map(appointment => `
+        <div class="flex justify-between items-center bg-gray-100 p-2 rounded mb-2">
+            <div>
+                <span class="font-semibold">${appointment.doctor}</span>
+                <span class="text-sm text-gray-500 ml-2">${appointment.specialty}</span>
+            </div>
+            <div class="text-right">
+                <span class="text-blue-600">${appointment.date}</span>
+                <span class="text-sm text-gray-500 ml-2">${appointment.time}</span>
+                <button onclick="deleteAppointment(${appointment.id})" class="ml-4 text-red-500 hover:text-red-700">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Fungsi untuk menambah jadwal konsultasi
+function addAppointment() {
+    const modalContainer = document.getElementById('modalContainer');
+    modalContainer.innerHTML = `
+        <div class="bg-white p-6 rounded-xl shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-4">Tambah Jadwal Konsultasi</h2>
+            <form id="addAppointmentForm" class="space-y-4">
+                <div>
+                    <label class="block mb-2">Dokter</label>
+                    <input type="text" id="doctorName" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block mb-2">Spesialisasi</label>
+                    <input type="text" id="specialty" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block mb-2">Tanggal</label>
+                    <input type="date" id="appointmentDate" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block mb-2">Waktu</label>
+                    <input type="time" id="appointmentTime" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Simpan</button>
+                    <button type="button" onclick="closeModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                </div>
+            </form>
+        </div>
+    `;
+    modalContainer.classList.remove('hidden');
+    modalContainer.classList.add('flex');
+
+    // Tangani form submit
+    const addAppointmentForm = document.getElementById('addAppointmentForm');
+    addAppointmentForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const doctor = document.getElementById('doctorName').value;
+        const specialty = document.getElementById('specialty').value;
+        const date = document.getElementById('appointmentDate').value;
+        const time = document.getElementById('appointmentTime').value;
+
+        const newAppointment = {
+            id: Date.now(), // ID unik berdasarkan timestamp
+            doctor: doctor,
+            specialty: specialty,
+            date: date,
+            time: time
+        };
+
+        appointments.push(newAppointment);
+        renderAppointments();
+        showNotification(`Jadwal konsultasi dengan ${doctor} berhasil ditambahkan`, 'success');
+        closeModal();
+    });
+}
+
+// Fungsi untuk menghapus jadwal konsultasi berdasarkan ID
+function deleteAppointment(id) {
+    const appointmentToDelete = appointments.find(appointment => appointment.id === id);
+    if (appointmentToDelete) {
+        appointments = appointments.filter(appointment => appointment.id !== id);
+        renderAppointments();
+        showNotification(`Jadwal konsultasi dengan ${appointmentToDelete.doctor} berhasil dihapus`, 'warning');
+    }
+}
+
+// Fungsi untuk menutup modal
+function closeModal() {
+    const modalContainer = document.getElementById('modalContainer');
+    modalContainer.classList.add('hidden');
+    modalContainer.classList.remove('flex');
+    modalContainer.innerHTML = '';
+}
+
+// Inisialisasi load appointments
+function loadAppointments() {
+    renderAppointments();
+
+    // Tambahkan tombol "Tambah Jadwal"
+    const appointmentScheduler = document.getElementById('appointmentScheduler');
+    const addButton = document.createElement('button');
+    addButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Tambah Jadwal';
+    addButton.classList.add('mt-4', 'w-full', 'bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded', 'hover:bg-blue-600');
+    addButton.addEventListener('click', addAppointment);
+
+    // Masukkan tombol ke dalam appointmentScheduler
+    const appointmentList = document.getElementById('appointmentList');
+    appointmentList.parentNode.insertBefore(addButton, appointmentList.nextSibling);
+}
+
+            // Fungsi untuk Menghitung BMI
+            function calculateBMI() {
+                const height = parseFloat(document.getElementById('height').value) / 100; // Ubah tinggi ke meter
+                const weight = parseFloat(document.getElementById('weight').value);
+                
+                if (!height || !weight) {
+                    alert("Harap masukkan berat dan tinggi badan yang valid.");
+                    return;
+                }
+    
+                // Hitung BMI
+                const bmi = (weight / (height * height)).toFixed(1);
+                document.getElementById('bmiValue').textContent = bmi;
+    
+                // Tentukan Kategori dan Saran
+                let category = "";
+                let recommendation = "";
+    
+                if (bmi < 18.5) {
+                    category = "Kurus";
+                    recommendation = "Anda berada di bawah berat badan ideal. Konsumsi makanan bernutrisi tinggi seperti protein, karbohidrat kompleks, dan lemak sehat. Tambahkan camilan sehat di antara waktu makan.";
+                } else if (bmi >= 18.5 && bmi < 22.9) {
+                    category = "Normal";
+                    recommendation = "Selamat! Anda memiliki berat badan ideal. Pertahankan pola makan seimbang dan aktivitas fisik secara rutin.";
+                } else if (bmi >= 23 && bmi < 24.9) {
+                    category = "Berlebih";
+                    recommendation = "Anda memiliki berat badan berlebih. Kurangi asupan kalori dan perbanyak makanan berserat. Tambahkan olahraga ringan seperti jalan kaki 30 menit setiap hari.";
+                } else {
+                    category = "Obesitas";
+                    recommendation = "Anda berada di kategori obesitas. Penting untuk mengurangi berat badan demi kesehatan. Kurangi makanan tinggi kalori dan lakukan olahraga teratur. Konsultasikan dengan ahli gizi atau dokter untuk rencana diet yang lebih baik.";
+                }
+    
+                // Tampilkan Hasil BMI dan Rekomendasi
+                document.getElementById('bmiCategory').textContent = `Kategori: ${category}`;
+                document.getElementById('dietTip').textContent = recommendation;
+                document.getElementById('bmiResult').classList.remove('hidden');
+            }    
+          
+              // Inisialisasi data dan konfigurasi chart
+        const ctx = document.getElementById('dietChart').getContext('2d');
+        const dietChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Label waktu secara real-time
+                datasets: [{
+                    label: 'Kalori Yang Dikonsumsi',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Waktu'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Kalori'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Fungsi untuk menambahkan data baru ke chart
+        function addData() {
+            const caloriesInput = document.getElementById('calories');
+            const calories = parseFloat(caloriesInput.value);
+            
+            if (isNaN(calories) || calories <= 0) {
+                alert('Tolong masukkan angka kalori.');
+                return;
+            }
+
+            // Dapatkan waktu saat ini
+            const now = new Date();
+            const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+
+            // Tambahkan data ke chart
+            dietChart.data.labels.push(timeLabel);
+            dietChart.data.datasets[0].data.push(calories);
+
+            // Update chart untuk menampilkan data baru
+            dietChart.update();
+
+            // Tampilkan popup
+            openPopup();
+
+            // Kosongkan input setelah menambahkan
+            caloriesInput.value = '';
+        }
+
+        // Fungsi untuk menampilkan popup
+        function openPopup() {
+            const popupContainer = document.getElementById('popupContainer');
+            popupContainer.style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup popup
+        function closePopup() {
+            const popupContainer = document.getElementById('popupContainer');
+            popupContainer.style.display = 'none';
+        }
+
+        // Fungsi Tips Kesehatan
+        function loadHealthTips() {
+            const tips = [
+                'Konsumsi 8 gelas air putih sehari',
+                'Lakukan olahraga minimal 30 menit per hari',
+                'Hindari makanan berlemak dan tinggi gula',
+                'Tidur cukup 7-8 jam per malam'
+            ];
+
+            healthTips.innerHTML = tips.map(tip => `
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <i class="fas fa-heartbeat text-blue-500 mr-2"></i>
+                    ${tip}
+                </div>
+            `).join('');
+        }
+
+        // Event Listeners
+        healthTracker.addEventListener('click', () => {
+            showNotification('Detail pelacakan kesehatan sedang dipersiapkan', 'info');
+        });
+
+        medicineReminder.addEventListener('click', () => {
+            showNotification('Detail pengingat obat sedang dipersiapkan', 'info');
+        });
+
+        appointmentScheduler.addEventListener('click', () => {
+            showNotification('Detail jadwal konsultasi sedang dipersiapkan', 'info');
+        });
+
+        notificationToggle.addEventListener('click', () => {
+            notificationBadge.classList.add('hidden');
+            notificationBadge.textContent = '0';
+        });
+
+        profileBtn.addEventListener('click', () => {
+            showNotification('Profil pengguna sedang dipersiapkan', 'info');
+        });
+
+        // Inisialisasi Halaman
+        function initializePage() {
+            updateHealthStats();
+            loadMedicineReminders();
+            loadAppointments();
+            loadHealthTips();
+
+            // Simulasi notifikasi berkala
+            setInterval(() => {
+                showNotification('Saatnya minum obat!', 'warning');
+            }, 60000); // Setiap menit untuk demonstrasi
+        }
+
+        // Jalankan inisialisasi
+        initializePage();
+    </script>
+</body>
+</html>
+<style>
+        .draggable {
+            cursor: move;
+            transition: transform 0.2s;
+        }
+        .draggable:hover {
+            transform: scale(1.05);
+        }
+        .dragging {
+            opacity: 0.5;
+        }
+        .drop-zone {
+            border: 2px dashed #3B82F6;
+            transition: background-color 0.3s;
+        }
+        .drop-zone-active {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen">
+    <div class="container mx-auto max-w-6xl p-6">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h1 class="text-3xl font-bold text-blue-600 mb-6">Rekam Medis Interaktif</h1>
+            
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Daftar Dokumen Medis -->
+                <div id="documentLibrary" class="bg-gray-100 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Perpustakaan Dokumen</h2>
+                    <div class="space-y-3" id="availableDocuments">
+                        <!-- Dokumen akan ditambahkan secara dinamis -->
+                    </div>
+                    <button id="addDocumentBtn" class="mt-4 w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                        <i class="fas fa-plus mr-2"></i>Tambah Dokumen
+                    </button>
+                </div>
+
+                <!-- Area Drag and Drop -->
+                <div id="dropZone" class="bg-white border-2 border-dashed border-blue-300 p-6 rounded-lg min-h-[400px] drop-zone">
+                    <h2 class="text-xl font-semibold text-center text-gray-500">
+                        <i class="fas fa-file-upload mr-2"></i>
+                        Seret dan Lepas Dokumen Di Sini
+                    </h2>
+                    <div id="droppedDocuments" class="space-y-3 mt-4">
+                        <!-- Dokumen yang di-drop akan muncul di sini -->
+                    </div>
+                </div>
+
+                <!-- Kategori Dokumen -->
+                <div id="documentCategories" class="bg-gray-100 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Kategori Dokumen</h2>
+                    <div id="categoryList" class="space-y-3">
+                        <!-- Kategori akan ditambahkan secara dinamis -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Tambah Dokumen -->
+        <div id="addDocumentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg w-96">
+                <h2 class="text-xl font-semibold mb-4">Tambah Dokumen Baru</h2>
+                <input 
+                    type="text" 
+                    id="documentNameInput" 
+                    placeholder="Nama Dokumen" 
+                    class="w-full p-2 border rounded mb-3"
+                >
+                <select 
+                    id="documentCategorySelect" 
+                    class="w-full p-2 border rounded mb-3"
+                >
+                    <option value="">Pilih Kategori</option>
+                </select>
+                <div class="flex justify-between">
+                    <button id="saveDocumentBtn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                        Simpan
+                    </button>
+                    <button id="cancelDocumentBtn" class="bg-gray-300 text-gray-700 p-2 rounded hover:bg-gray-400">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+    <script>
+        // Inisialisasi Variabel
+        const availableDocuments = document.getElementById('availableDocuments');
+        const droppedDocuments = document.getElementById('droppedDocuments');
+        const dropZone = document.getElementById('dropZone');
+        const categoryList = document.getElementById('categoryList');
+        const addDocumentBtn = document.getElementById('addDocumentBtn');
+        const addDocumentModal = document.getElementById('addDocumentModal');
+        const documentNameInput = document.getElementById('documentNameInput');
+        const documentCategorySelect = document.getElementById('documentCategorySelect');
+        const saveDocumentBtn = document.getElementById('saveDocumentBtn');
+        const cancelDocumentBtn = document.getElementById('cancelDocumentBtn');
+
+        // Data Awal
+        let documents = [
+            { id: 1, name: 'Hasil Lab Darah', category: 'Lab' },
+            { id: 2, name: 'Resep Dokter', category: 'Resep' },
+            { id: 3, name: 'Rekam Medis Umum', category: 'Umum' }
+        ];
+
+        const categories = [
+            { id: 1, name: 'Lab' },
+            { id: 2, name: 'Resep' },
+            { id: 3, name: 'Umum' }
+        ];
+
+        // Fungsi Render Dokumen
+        function renderDocuments() {
+            // Render dokumen tersedia
+            availableDocuments.innerHTML = documents
+                .filter(doc => !doc.dropped)
+                .map(doc => `
+                    <div 
+                        class="bg-white p-3 rounded shadow draggable" 
+                        draggable="true" 
+                        data-id="${doc.id}"
+                    >
+                        <div class="flex justify-between items-center">
+                            <span>${doc.name}</span>
+                            <span class="text-sm text-gray-500">${doc.category}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Render dokumen yang di-drop
+            droppedDocuments.innerHTML = documents
+                .filter(doc => doc.dropped)
+                .map(doc => `
+                    <div 
+                        class="bg-blue-50 p-3 rounded shadow draggable flex justify-between items-center" 
+                        draggable="true" 
+                        data-id="${doc.id}"
+                    >
+                        <div>
+                            <span>${doc.name}</span>
+                            <span class="text-sm text-gray-500 ml-2">${doc.category}</span>
+                        </div>
+                        <button 
+                            class="text-red-500 remove-document hover:text-red-700"
+                            data-id="${doc.id}"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+            // Render kategori
+            categoryList.innerHTML = categories.map(category => `
+                <div class="bg-blue-100 p-2 rounded">
+                    <span class="font-medium">${category.name}</span>
+                    <span class="text-sm text-gray-600 ml-2">
+                        ${documents.filter(doc => doc.category === category.name).length} Dokumen
+                    </span>
+                </div>
+            `).join('');
+
+            // Render kategori di modal
+            documentCategorySelect.innerHTML = `
+                <option value="">Pilih Kategori</option>
+                ${categories.map(category => `
+                    <option value="${category.name}">${category.name}</option>
+                `).join('')}
+            `;
+
+            // Tambahkan event listeners
+            addDragAndDropListeners();
+            addRemoveDocumentListeners();
+        }
+
+        // Fungsi Tambah Event Listeners Drag and Drop
+        function addDragAndDropListeners() {
+            const draggables = document.querySelectorAll('.draggable');
+            
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', e.target.dataset.id);
+                    e.target.classList.add('dragging');
+                });
+
+                draggable.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+            });
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drop-zone-active');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drop-zone-active');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drop-zone-active');
+                
+                const documentId = parseInt(e.dataTransfer.getData('text/plain'));
+                const documentIndex = documents.findIndex(doc => doc.id === documentId);
+                
+                if (documentIndex !== -1) {
+                    documents[documentIndex].dropped = true;
+                    renderDocuments();
+                }
+            });
+        }
+
+        // Fungsi Tambah Event Listeners Hapus Dokumen
+        function addRemoveDocumentListeners() {
+            const removeButtons = document.querySelectorAll('.remove-document');
+            
+            removeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const documentId = parseInt(button.dataset.id);
+                    const documentIndex = documents.findIndex(doc => doc.id === documentId);
+                    
+                    if (documentIndex !== -1) {
+                        documents[documentIndex].dropped = false;
+                        renderDocuments();
+                    }
+                });
+            });
+        }
+
+        // Fungsi Tambah Dokumen
+        function showAddDocumentModal() {
+            addDocumentModal.classList.remove('hidden');
+            addDocumentModal.classList.add('flex');
+        }
+
+        function hideAddDocumentModal() {
+            addDocumentModal.classList.remove('flex');
+            addDocumentModal.classList.add('hidden');
+            documentNameInput.value = '';
+            documentCategorySelect.value = '';
+        }
+
+        function saveDocument() {
+            const name = documentNameInput.value.trim();
+            const category = documentCategorySelect.value;
+
+            if (name && category) {
+                const newDocument = {
+                    id: Date.now(),
+                    name,
+                    category,
+                    dropped: false
+                };
+
+                documents.push(newDocument);
+                renderDocuments();
+                hideAddDocumentModal();
+            } else {
+                alert('Harap isi nama dan kategori dokumen');
+            }
+        }
+
+        // Event Listeners
+        addDocumentBtn.addEventListener('click', showAddDocumentModal);
+        cancelDocumentBtn.addEventListener('click', hideAddDocumentModal);
+        saveDocumentBtn.addEventListener('click', saveDocument);
+
+        // Inisialisasi
+        renderDocuments();
+
+         
+    </script>
+</body>
+</html>
+   
